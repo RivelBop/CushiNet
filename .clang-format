@@ -77,10 +77,7 @@ SpaceInEmptyParentheses: false
 UseCRLF: false
 UseTab: Never
 
-IfMacros:
-  [
-    "CHECK_PARAM",
-  ]
+IfMacros: ["CHECK_PARAM"]
 
 ForEachMacros:
   [
