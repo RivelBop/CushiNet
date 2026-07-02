@@ -41,6 +41,11 @@ class Server
     [[nodiscard]] bool start(const SteamNetworkingIPAddr &localAddress, int nOptions,
                              const SteamNetworkingConfigValue_t *pOptions);
 
+    /**
+     * Closes the server socket and poll group.
+     */
+    void stop();
+
   private:
     ISteamNetworkingSockets *networkInterface{ nullptr };
     HSteamListenSocket socket{ k_HSteamListenSocket_Invalid };

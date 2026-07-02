@@ -65,4 +65,17 @@ bool Server::start(const SteamNetworkingIPAddr &localAddress, int nOptions,
     return true;
 }
 
+void Server::stop()
+{
+    // Destroy server socket
+    if (socket != k_HSteamListenSocket_Invalid) {
+        networkInterface->CloseListenSocket(socket);
+    }
+
+    // Destroy poll group
+    if (pollGroup != k_HSteamNetPollGroup_Invalid) {
+        networkInterface->DestroyPollGroup(pollGroup);
+    }
+}
+
 } // namespace CushiNet
