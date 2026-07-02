@@ -25,7 +25,7 @@ class Server
      *
      * Returns true if the server socket and poll group were successfully created.
      */
-    [[nodiscard]] bool start(uint16 port);
+    [[nodiscard]] bool start(uint16 port = 21106);
 
     /**
      * Creates a server socket that listens for clients to connect and a poll group
