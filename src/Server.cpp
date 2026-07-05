@@ -15,13 +15,13 @@ Server::Server(ServerListener *listener, ISteamNetworkingSockets *networkInterfa
 
 Server::~Server()
 {
-    stop();
+    Stop();
 }
 
-void Server::start(uint16 port)
+void Server::Start(uint16 port)
 {
     // Prevent starting the same server again
-    if (isRunning()) {
+    if (IsRunning()) {
         return;
     }
 
@@ -32,7 +32,7 @@ void Server::start(uint16 port)
 
     // Set connection status changed callback
     SteamNetworkingConfigValue_t opt;
-    opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)connectionStatusChangedCallback);
+    opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)ConnectionStatusChangedCallback);
 
     // Create server socket
     socket = networkInterface->CreateListenSocketIP(serverLocalAddr, 1, &opt);
@@ -52,10 +52,10 @@ void Server::start(uint16 port)
     globalServerRegistry[socket] = this;
 }
 
-void Server::start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions)
+void Server::Start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions)
 {
     // Prevent starting the same server again
-    if (isRunning()) {
+    if (IsRunning()) {
         return;
     }
 
@@ -77,7 +77,7 @@ void Server::start(const SteamNetworkingIPAddr &localAddress, const SteamNetwork
     globalServerRegistry[socket] = this;
 }
 
-void Server::stop()
+void Server::Stop()
 {
     // Destroy server socket
     if (socket != k_HSteamListenSocket_Invalid) {
@@ -96,15 +96,15 @@ void Server::stop()
     clients.clear();
 }
 
-void Server::setListener(ServerListener *listener)
+void Server::SetListener(ServerListener *listener)
 {
     this->listener = listener;
 }
 
-void Server::update()
+void Server::Update()
 {
     // Make sure the server is running
-    if (!isRunning()) {
+    if (!IsRunning()) {
         return;
     }
 
@@ -113,7 +113,7 @@ void Server::update()
     int numMsgs{ networkInterface->ReceiveMessagesOnPollGroup(pollGroup, &incomingMsg, 1) };
     while (numMsgs == 1 && incomingMsg) {
         if (listener) {
-            listener->onMessageReceived(*incomingMsg);
+            listener->OnMessageReceived(*incomingMsg);
         }
         incomingMsg->Release();
         numMsgs = networkInterface->ReceiveMessagesOnPollGroup(pollGroup, &incomingMsg, 1);
@@ -121,7 +121,7 @@ void Server::update()
 
     // Critical Error: Unable to receive incoming messages
     if (numMsgs < 0) {
-        stop();
+        Stop();
         throw std::runtime_error("Unable to receive messages on server poll group. Stopping server.");
     }
 
@@ -129,17 +129,17 @@ void Server::update()
     networkInterface->RunCallbacks();
 }
 
-EResult Server::sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const
+EResult Server::SendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const
 {
-    if (!isRunning()) {
+    if (!IsRunning()) {
         return k_EResultNoConnection;
     }
     return networkInterface->SendMessageToConnection(client, data, dataSize, networkProtocol, nullptr);
 }
 
-EResult Server::sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol, HSteamNetConnection except) const
+EResult Server::SendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol, HSteamNetConnection except) const
 {
-    if (!isRunning()) {
+    if (!IsRunning()) {
         return k_EResultNoConnection;
     }
 
@@ -157,17 +157,17 @@ EResult Server::sendMessageToAllClients(const void *data, uint32 dataSize, int n
     return result;
 }
 
-const std::unordered_set<HSteamNetConnection> &Server::getClients() const
+const std::unordered_set<HSteamNetConnection> &Server::GetClients() const
 {
     return clients;
 }
 
-bool Server::isRunning() const
+bool Server::IsRunning() const
 {
     return socket != k_HSteamListenSocket_Invalid && pollGroup != k_HSteamNetPollGroup_Invalid;
 }
 
-void Server::connectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info)
+void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info)
 {
     // This null-check was not in Valve's example, it is added here just in case
     if (!info) {
@@ -199,7 +199,7 @@ void Server::connectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
         // which server listener to call from the global server registry
         ServerListener *listener{ server->listener };
         if (listener) {
-            listener->onConnectionStatusChanged(*info);
+            listener->OnConnectionStatusChanged(*info);
         }
     }
 }

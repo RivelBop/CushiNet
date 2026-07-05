@@ -14,8 +14,8 @@ class ServerListener
 {
   public:
     virtual ~ServerListener() = default;
-    virtual void onConnectionStatusChanged(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
-    virtual void onMessageReceived(const ISteamNetworkingMessage &msg) = 0;
+    virtual void OnConnectionStatusChanged(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
+    virtual void OnMessageReceived(const ISteamNetworkingMessage &msg) = 0;
 };
 
 class Server
@@ -45,7 +45,7 @@ class Server
      *
      * Throws `std::runtime_error` if unable to create socket or poll group.
      */
-    void start(uint16 port = 21106);
+    void Start(uint16 port = 21106);
 
     /**
      * Creates a server socket that listens for clients to connect and a poll group
@@ -58,7 +58,7 @@ class Server
      *
      * Throws `std::runtime_error` if unable to create socket or poll group.
      */
-    void start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions);
+    void Start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions);
 
     /**
      * Closes the server socket and poll group.
@@ -66,19 +66,19 @@ class Server
      * When closing the socket, the server is also removed from the global
      * server registry for callbacks.
      */
-    void stop();
+    void Stop();
 
     /**
      * Sets the `listener` to act as a callback for this server.
      *
      * `listener` can be `nullptr`, but setting it is highly recommended.
      */
-    void setListener(ServerListener *listener);
+    void SetListener(ServerListener *listener);
 
     /**
      * Polls for incoming messages and connection status changes.
      */
-    void update();
+    void Update();
 
     /**
      * Sends data to a client's connection.
@@ -93,7 +93,7 @@ class Server
      * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
      * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
      */
-    EResult sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const;
+    EResult SendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const;
 
     /**
      * Sends data to all connected clients.
@@ -108,18 +108,18 @@ class Server
      * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
      * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
      */
-    EResult sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol,
+    EResult SendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol,
                                     HSteamNetConnection except = k_HSteamNetConnection_Invalid) const;
 
     /**
      * Returns all connected clients.
      */
-    const std::unordered_set<HSteamNetConnection> &getClients() const;
+    const std::unordered_set<HSteamNetConnection> &GetClients() const;
 
     /**
      * Returns `true` if a server socket and poll group have been created.
      */
-    bool isRunning() const;
+    bool IsRunning() const;
 
     /**
      * Used to alert servers of connection status changes.
@@ -130,7 +130,7 @@ class Server
      *
      * `SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)connectionStatusChangedCallback)`.
      */
-    static void connectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info);
+    static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info);
 
   private:
     ISteamNetworkingSockets *networkInterface{ nullptr };
