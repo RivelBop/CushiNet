@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include <steam/isteamnetworkingsockets.h>
 
@@ -90,9 +91,28 @@ class Server
      * - `k_EResultInvalidState`: Connection is in an invalid state.
      * - `k_EResultNoConnection`: Connection has ended.
      * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
-     * - `k_EResultLimitExceeded`: there was already too much data queued to be sent.
+     * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
      */
-    EResult sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol);
+    EResult sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const;
+
+    /**
+     * Sends data to all connected clients.
+     *
+     * Provide the `data` and `networkProtocol` (`k_nSteamNetworkingSend_Unreliable`, etc.).
+     *
+     * Returns:
+     * - `k_EResultInvalidParam`: Invalid connection handle, or the individual message is too big.
+     * - `k_EResultInvalidState`: Connection is in an invalid state.
+     * - `k_EResultNoConnection`: Connection has ended.
+     * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
+     * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
+     */
+    EResult sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol) const;
+
+    /**
+     * Returns all connected clients.
+     */
+    const std::unordered_set<HSteamNetConnection> &getClients() const;
 
     /**
      * Returns `true` if a server socket and poll group have been created.
@@ -115,6 +135,7 @@ class Server
     HSteamListenSocket socket{ k_HSteamListenSocket_Invalid };
     HSteamNetPollGroup pollGroup{ k_HSteamNetPollGroup_Invalid };
     ServerListener *listener{ nullptr };
+    std::unordered_set<HSteamNetConnection> clients;
 
     static std::unordered_map<HSteamListenSocket, Server *> globalServerRegistry;
 };
