@@ -95,10 +95,7 @@ class Server
     EResult sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol);
 
     /**
-     * Returns `true` if a server socket or poll group have been created.
-     *
-     * If either is created, it should be assumed the other is created as well
-     * and as such the server is running.
+     * Returns `true` if a server socket and poll group have been created.
      */
     bool isRunning() const;
 

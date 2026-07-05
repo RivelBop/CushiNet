@@ -100,6 +100,11 @@ void Server::setListener(ServerListener *listener)
 
 void Server::update()
 {
+    // Make sure the server is running
+    if (!isRunning()) {
+        return;
+    }
+
     // Receive incoming messages
     ISteamNetworkingMessage *incomingMsg{ nullptr };
     int numMsgs{ networkInterface->ReceiveMessagesOnPollGroup(pollGroup, &incomingMsg, 1) };
@@ -123,12 +128,15 @@ void Server::update()
 
 EResult Server::sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol)
 {
+    if (!isRunning()) {
+        return k_EResultNoConnection;
+    }
     return networkInterface->SendMessageToConnection(client, data, dataSize, networkProtocol, nullptr);
 }
 
 bool Server::isRunning() const
 {
-    return socket != k_HSteamListenSocket_Invalid || pollGroup != k_HSteamNetPollGroup_Invalid;
+    return socket != k_HSteamListenSocket_Invalid && pollGroup != k_HSteamNetPollGroup_Invalid;
 }
 
 void Server::connectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info)
