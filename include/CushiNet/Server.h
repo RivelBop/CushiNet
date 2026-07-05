@@ -1,55 +1,110 @@
 #pragma once
 
+#include <unordered_map>
+
 #include <steam/isteamnetworkingsockets.h>
 
 namespace CushiNet
 {
 
+class Server;
+
+class ServerListener
+{
+  public:
+    virtual ~ServerListener() = default;
+    virtual void onConnectionStatusChanged(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
+    virtual void onMessageReceived(const ISteamNetworkingMessage &msg) = 0;
+};
+
 class Server
 {
   public:
     /**
-     * Create a server with the provided SteamNetworkingSockets implementation.
+     * Create a server with the provided `ServerListener` and `ISteamNetworkingSockets` implementation.
      *
-     * The recommended default implementation is provided by Valve via
+     * The `listener` is a `nullptr` by default but setting one is highly recommended.
+     *
+     * The recommended default `networkInterface` implementation is provided by Valve via
      * `SteamNetworkingSockets()`.
      */
-    Server(ISteamNetworkingSockets *networkInterface = SteamNetworkingSockets());
+    Server(ServerListener *listener = nullptr, ISteamNetworkingSockets *networkInterface = SteamNetworkingSockets());
+
+    /**
+     * Stops the server.
+     */
+    ~Server();
 
     /**
      * Creates a server socket that listens for clients to connect and a poll group
      * to handle messages from all connections.
      *
-     * Requires a `port` to host on, the `localAddress` is cleared, and default
-     * network configurations are used.
+     * Requires a `port` to host on, the `localAddress` is cleared, and a connection
+     * status changed callback is configured for this server.
      *
-     * Returns true if the server socket and poll group were successfully created.
+     * Throws `std::runtime_error` if unable to create socket or poll group.
      */
-    [[nodiscard]] bool start(uint16 port = 21106);
+    void start(uint16 port = 21106);
 
     /**
      * Creates a server socket that listens for clients to connect and a poll group
      * to handle messages from all connections.
      *
-     * Requires ipv4, ipv6, and port specifications provided via `localAddress`.
+     * Requires IPv4, IPv6, and port specifications provided via `localAddress`.
      *
-     * For further network configuration, provide the number of options configured via
-     * `nOptions` (can be 0) and an option array `pOptions` (can be `nullptr`).
+     * For further network configuration, provide an option array `options`
+     * (can be `nullptr`) and the number of options `numOptions` (can be `0`).
      *
-     * Returns true if the server socket and poll group were successfully created.
+     * Throws `std::runtime_error` if unable to create socket or poll group.
      */
-    [[nodiscard]] bool start(const SteamNetworkingIPAddr &localAddress, int nOptions,
-                             const SteamNetworkingConfigValue_t *pOptions);
+    void start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions);
 
     /**
      * Closes the server socket and poll group.
+     *
+     * When closing the socket, the server is also removed from the global
+     * server registry for callbacks.
      */
     void stop();
+
+    /**
+     * Sets the `listener` to act as a callback for this server.
+     *
+     * `listener` can be `nullptr`, but setting it is highly recommended.
+     */
+    void setListener(ServerListener *listener);
+
+    /**
+     * Polls for incoming messages and connection status changes.
+     */
+    void update();
+
+    /**
+     * Returns `true` if a server socket or poll group have been created.
+     *
+     * If either is created, it should be assumed the other is created as well
+     * and as such the server is running.
+     */
+    bool isRunning() const;
+
+    /**
+     * Used to alert servers of connection status changes.
+     *
+     * This should NEVER be called directly, this is useful when implementing
+     * custom server configurations, allowing the user to utilize the built-in
+     * callback system by calling:
+     *
+     * `SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)connectionStatusChangedCallback)`.
+     */
+    static void connectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info);
 
   private:
     ISteamNetworkingSockets *networkInterface{ nullptr };
     HSteamListenSocket socket{ k_HSteamListenSocket_Invalid };
     HSteamNetPollGroup pollGroup{ k_HSteamNetPollGroup_Invalid };
+    ServerListener *listener{ nullptr };
+
+    static std::unordered_map<HSteamListenSocket, Server *> globalServerRegistry;
 };
 
 } // namespace CushiNet
