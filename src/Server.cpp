@@ -121,6 +121,11 @@ void Server::update()
     networkInterface->RunCallbacks();
 }
 
+EResult Server::sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol)
+{
+    return networkInterface->SendMessageToConnection(client, data, dataSize, networkProtocol, nullptr);
+}
+
 bool Server::isRunning() const
 {
     return socket != k_HSteamListenSocket_Invalid || pollGroup != k_HSteamNetPollGroup_Invalid;

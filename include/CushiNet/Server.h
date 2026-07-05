@@ -80,6 +80,21 @@ class Server
     void update();
 
     /**
+     * Sends data to a client's connection.
+     *
+     * Provide a connected `client`, the necessary `data`, and
+     * `networkProtocol` (`k_nSteamNetworkingSend_Unreliable`, etc.).
+     *
+     * Returns:
+     * - `k_EResultInvalidParam`: Invalid connection handle, or the individual message is too big.
+     * - `k_EResultInvalidState`: Connection is in an invalid state.
+     * - `k_EResultNoConnection`: Connection has ended.
+     * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
+     * - `k_EResultLimitExceeded`: there was already too much data queued to be sent.
+     */
+    EResult sendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol);
+
+    /**
      * Returns `true` if a server socket or poll group have been created.
      *
      * If either is created, it should be assumed the other is created as well
