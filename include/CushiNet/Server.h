@@ -99,6 +99,7 @@ class Server
      * Sends data to all connected clients.
      *
      * Provide the `data` and `networkProtocol` (`k_nSteamNetworkingSend_Unreliable`, etc.).
+     * The `except` is used when the intention is to send data to all clients except one.
      *
      * Returns:
      * - `k_EResultInvalidParam`: Invalid connection handle, or the individual message is too big.
@@ -107,7 +108,8 @@ class Server
      * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
      * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
      */
-    EResult sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol) const;
+    EResult sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol,
+                                    HSteamNetConnection except = k_HSteamNetConnection_Invalid) const;
 
     /**
      * Returns all connected clients.

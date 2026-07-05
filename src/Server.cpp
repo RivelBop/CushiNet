@@ -137,7 +137,7 @@ EResult Server::sendMessageToClient(HSteamNetConnection client, const void *data
     return networkInterface->SendMessageToConnection(client, data, dataSize, networkProtocol, nullptr);
 }
 
-EResult Server::sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol) const
+EResult Server::sendMessageToAllClients(const void *data, uint32 dataSize, int networkProtocol, HSteamNetConnection except) const
 {
     if (!isRunning()) {
         return k_EResultNoConnection;
@@ -145,6 +145,10 @@ EResult Server::sendMessageToAllClients(const void *data, uint32 dataSize, int n
 
     EResult result{ k_EResultOK };
     for (auto client : clients) {
+        if (client == except) {
+            continue;
+        }
+
         EResult currentResult{ networkInterface->SendMessageToConnection(client, data, dataSize, networkProtocol, nullptr) };
         if (currentResult != k_EResultOK) {
             result = currentResult;
