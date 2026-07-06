@@ -131,9 +131,16 @@ void Server::Update()
 
 EResult Server::SendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const
 {
+    // Ensures the server is active
     if (!IsRunning()) {
         return k_EResultNoConnection;
     }
+
+    // Ensures client is a part of the server
+    if (clients.find(client) == clients.end()) {
+        return k_EResultInvalidState;
+    }
+
     return networkInterface->SendMessageToConnection(client, data, dataSize, networkProtocol, nullptr);
 }
 
