@@ -193,6 +193,10 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
         case k_ESteamNetworkingConnectionState_Connected:
             server->clients.insert(info->m_hConn);
             break;
+
+        // Silences -Wswitch
+        default:
+            break;
         }
 
         // Using the provided listen socket information, we can determine
@@ -200,6 +204,19 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
         ServerListener *listener{ server->listener };
         if (listener) {
             listener->OnConnectionStatusChanged(*info);
+        }
+
+        switch (info->m_info.m_eState) {
+
+        // Clean up the connection
+        case k_ESteamNetworkingConnectionState_ClosedByPeer:
+        case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
+            server->networkInterface->CloseConnection(info->m_hConn, 0, nullptr, false);
+            break;
+
+        // Silences -Wswitch
+        default:
+            break;
         }
     }
 }
