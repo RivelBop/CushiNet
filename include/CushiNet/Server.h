@@ -81,15 +81,30 @@ class Server
     void Update();
 
     /**
+     * Accepts a client's connection; this should be called in the callback
+     * when `k_ESteamNetworkingConnectionState_Connecting` is received.
+     *
+     * Returns:
+     * - `k_EResultOK`: Connection accepted successfully.
+     * - `k_EResultInvalidParam`: Handle is invalid.
+     * - `k_EResultInvalidState`: Connection is not in the appropriate state.
+     * - `k_EResultNoConnection`: Server is not running.
+     * - `k_EResultDuplicateRequest`: Client is already in the server.
+     * - `k_EResultFail`: Unable to add connection to the poll group.
+     */
+    EResult AcceptClient(HSteamNetConnection client);
+
+    /**
      * Sends data to a client's connection.
      *
      * Provide a connected `client`, the necessary `data`, and
      * `networkProtocol` (`k_nSteamNetworkingSend_Unreliable`, etc.).
      *
      * Returns:
+     * - `k_EResultOK`: Message successfully sent.
      * - `k_EResultInvalidParam`: Invalid connection handle, or the individual message is too big.
-     * - `k_EResultInvalidState`: Connection is in an invalid state.
-     * - `k_EResultNoConnection`: Connection has ended.
+     * - `k_EResultInvalidState`: Connection is in an invalid state or not in the server.
+     * - `k_EResultNoConnection`: Connection has ended or server is not running.
      * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
      * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
      */
@@ -102,9 +117,10 @@ class Server
      * The `except` is used when the intention is to send data to all clients except one.
      *
      * Returns:
+     * - `k_EResultOK`: Message successfully sent.
      * - `k_EResultInvalidParam`: Invalid connection handle, or the individual message is too big.
      * - `k_EResultInvalidState`: Connection is in an invalid state.
-     * - `k_EResultNoConnection`: Connection has ended.
+     * - `k_EResultNoConnection`: Connection has ended or server is not running.
      * - `k_EResultIgnored`: Using `k_nSteamNetworkingSend_NoDelay` and message dropped since not ready to send.
      * - `k_EResultLimitExceeded`: There was already too much data queued to be sent.
      */
@@ -125,7 +141,7 @@ class Server
      * Used to alert servers of connection status changes.
      *
      * This should NEVER be called directly, this is useful when implementing
-     * custom server configurations, allowing the user to utilize the built-in
+     * custom server configurations; the user MUST utilize the built-in
      * callback system by calling:
      *
      * `SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)connectionStatusChangedCallback)`.

@@ -129,9 +129,38 @@ void Server::Update()
     networkInterface->RunCallbacks();
 }
 
+EResult Server::AcceptClient(HSteamNetConnection client)
+{
+    // Ensures the server is running
+    if (!IsRunning()) {
+        return k_EResultNoConnection;
+    }
+
+    // This should be a new client
+    if (clients.find(client) != clients.end()) {
+        return k_EResultDuplicateRequest;
+    }
+
+    // Accept the client's connection
+    // This will immediately trigger the callbacks so the client should be added to the map
+    EResult result{ networkInterface->AcceptConnection(client) };
+    if (result != k_EResultOK) {
+        networkInterface->CloseConnection(client, 0, nullptr, false);
+        return result;
+    }
+
+    // Add the client to the poll group to receive messages
+    if (!networkInterface->SetConnectionPollGroup(client, pollGroup)) {
+        networkInterface->CloseConnection(client, 0, nullptr, false);
+        return k_EResultFail;
+    }
+
+    return k_EResultOK;
+}
+
 EResult Server::SendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const
 {
-    // Ensures the server is active
+    // Ensures the server is running
     if (!IsRunning()) {
         return k_EResultNoConnection;
     }
