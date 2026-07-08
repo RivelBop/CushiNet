@@ -90,6 +90,14 @@ void Server::Start(const SteamNetworkingIPAddr &localAddress, const SteamNetwork
 
 void Server::Stop()
 {
+    // All connected clients are no longer valid
+    if (IsRunning()) {
+        for (auto client : clients) {
+            networkInterface->CloseConnection(client, 0, "Server Shutdown", true);
+        }
+    }
+    clients.clear();
+
     // Destroy server socket
     if (socket != k_HSteamListenSocket_Invalid) {
         globalServerRegistry.erase(socket);
@@ -102,9 +110,6 @@ void Server::Stop()
         networkInterface->DestroyPollGroup(pollGroup);
         pollGroup = k_HSteamNetPollGroup_Invalid;
     }
-
-    // All connected clients are no longer valid
-    clients.clear();
 }
 
 void Server::SetListener(ServerListener *listener)
@@ -153,20 +158,33 @@ EResult Server::AcceptClient(HSteamNetConnection client)
     }
 
     // Accept the client's connection
-    // This will immediately trigger the callbacks so the client should be added to the map
     EResult result{ networkInterface->AcceptConnection(client) };
     if (result != k_EResultOK) {
-        networkInterface->CloseConnection(client, 0, nullptr, false);
+        networkInterface->CloseConnection(client, 0, "Server Failed to Accept", false);
         return result;
     }
 
     // Add the client to the poll group to receive messages
     if (!networkInterface->SetConnectionPollGroup(client, pollGroup)) {
-        networkInterface->CloseConnection(client, 0, nullptr, false);
+        networkInterface->CloseConnection(client, 0, "Server Failed Adding to Poll Group", false);
         return k_EResultFail;
     }
 
+    // Keep track of the client
+    clients.insert(client);
+
     return k_EResultOK;
+}
+
+bool Server::RemoveClient(HSteamNetConnection client)
+{
+    if (!IsRunning() || clients.find(client) == clients.end()) {
+        return false;
+    }
+
+    networkInterface->CloseConnection(client, 0, "Server Removed Client", true);
+    clients.erase(client);
+    return true;
 }
 
 EResult Server::SendMessageToClient(HSteamNetConnection client, const void *data, uint32 dataSize, int networkProtocol) const
@@ -230,20 +248,13 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
             return;
         }
 
-        // Keep track of all connected clients;
-        // Useful when sending messages to all clients
         switch (info->m_info.m_eState) {
 
         // Handle disconnecting clients
-        case k_ESteamNetworkingConnectionState_None:
         case k_ESteamNetworkingConnectionState_ClosedByPeer:
         case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
+            server->networkInterface->CloseConnection(info->m_hConn, 0, nullptr, false);
             server->clients.erase(info->m_hConn);
-            break;
-
-        // Handle connecting clients
-        case k_ESteamNetworkingConnectionState_Connected:
-            server->clients.insert(info->m_hConn);
             break;
 
         // Silences -Wswitch
@@ -256,19 +267,6 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
         ServerListener *listener{ server->listener };
         if (listener) {
             listener->OnConnectionStatusChanged(*info);
-        }
-
-        switch (info->m_info.m_eState) {
-
-        // Clean up the connection
-        case k_ESteamNetworkingConnectionState_ClosedByPeer:
-        case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
-            server->networkInterface->CloseConnection(info->m_hConn, 0, nullptr, false);
-            break;
-
-        // Silences -Wswitch
-        default:
-            break;
         }
     }
 }

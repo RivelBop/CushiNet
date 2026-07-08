@@ -93,6 +93,9 @@ class Server
      * Accepts a client's connection; this should be called in the callback
      * when `k_ESteamNetworkingConnectionState_Connecting` is received.
      *
+     * You MUST call this when accepting a client as it also adds the new
+     * client into the server's client set to keep track.
+     *
      * Returns:
      * - `k_EResultOK`: Connection accepted successfully.
      * - `k_EResultInvalidParam`: Handle is invalid.
@@ -102,6 +105,19 @@ class Server
      * - `k_EResultFail`: Unable to add connection to the poll group.
      */
     EResult AcceptClient(HSteamNetConnection client);
+
+    /**
+     * Closes a client's connection, basically kicking them out.
+     *
+     * You MUST call this when manually removing a client as it also
+     * removes the client from the server's client set to keep track.
+     *
+     * Returns `true` if successfully closed the connection.
+     * Returns `false` if:
+     * - The server isn't running.
+     * - This client was not accepted into the server.
+     */
+    bool RemoveClient(HSteamNetConnection client);
 
     /**
      * Sends data to a client's connection.
