@@ -14,8 +14,44 @@ class ServerListener
 {
   public:
     virtual ~ServerListener() = default;
-    virtual void OnConnectionStatusChanged(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
+
+    /**
+     * Called when a client connection is trying to connect to the server,
+     * aka when `info.m_info.m_eState` is `k_ESteamNetworkingConnectionState_Connecting`.
+     *
+     * You can choose to accept this connection via `AcceptClient(client)` or simply ignore it
+     * and provide an optional `rejectReason` explaining why the request was rejected.
+     *
+     * This is the ideal place to deny connections if a server is already full and where you
+     * should handle what happens when a client successfully connects after `AcceptClient(client)`
+     * returns `k_EResultOK`.
+     */
+    virtual void OnConnectionRequest(const SteamNetConnectionStatusChangedCallback_t &info, const char *&rejectReason) = 0;
+
+    /**
+     * Called when a message is received from a client connection via the poll group.
+     *
+     * You should read the message and likely send something back via
+     * `SendMessageToClient(client, data, dataSize, networkProtocol)` or
+     * `SendMessageToAllClients(data, dataSize, networkProtocol, except)`.
+     */
     virtual void OnMessageReceived(const ISteamNetworkingMessage &msg) = 0;
+
+    /**
+     * Called when a client disconnects from the server, aka when `info.m_info.m_eState`
+     * is either `k_ESteamNetworkingConnectionState_ClosedByPeer` or
+     * `k_ESteamNetworkingConnectionState_ProblemDetectedLocally`.
+     *
+     * The connection handle for the client has already been closed so you cannot
+     * send a message to the disconnected client. Instead you should alert all other
+     * clients that this client has disconnected via
+     * `SendMessageToAllClients(data, dataSize, networkProtocol, except)`.
+     *
+     * `OnDisconnect()` will NOT be called if you manually/forcefully remove the client
+     * via `RemoveClient(client)`. In this case, you should handle the disconnect
+     * logic right after instead of waiting for `RunCallbacks()`.
+     */
+    virtual void OnDisconnect(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
 };
 
 class Server
@@ -98,8 +134,9 @@ class Server
      * Accepts a client's connection; this should be called in the callback
      * when `k_ESteamNetworkingConnectionState_Connecting` is received.
      *
-     * You MUST call this when accepting a client as it also adds the new
-     * client into the server's client set to keep track.
+     * NEVER call `AcceptConnection(hConn)` directly from the
+     * `networkInterface` as it will not allow the server to keep track of
+     * the client, which breaks numerous server functionalities.
      *
      * Returns:
      * - `k_EResultOK`: Connection accepted successfully.
@@ -112,17 +149,22 @@ class Server
     EResult AcceptClient(HSteamNetConnection client);
 
     /**
-     * Closes a client's connection, basically kicking them out.
+     * Closes a client's connection, kicking them out.
      *
-     * You MUST call this when manually removing a client as it also
-     * removes the client from the server's client set to keep track.
+     * You may provide a `reason` for removing the client,
+     * this is useful when you want to display a message to the
+     * client as to why they were removed from the server.
+     *
+     * NEVER call `CloseConnection()` directly from the
+     * `networkInterface` as it will not allow the server to keep track of
+     * the client, which breaks numerous server functionalities.
      *
      * Returns `true` if successfully closed the connection.
      * Returns `false` if:
      * - The server isn't running.
      * - This client was not accepted into the server.
      */
-    bool RemoveClient(HSteamNetConnection client);
+    bool RemoveClient(HSteamNetConnection client, const char *reason = "Server Removed Client");
 
     /**
      * Sends data to a client's connection.

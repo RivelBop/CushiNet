@@ -181,13 +181,17 @@ EResult Server::AcceptClient(HSteamNetConnection client)
     return k_EResultOK;
 }
 
-bool Server::RemoveClient(HSteamNetConnection client)
+bool Server::RemoveClient(HSteamNetConnection client, const char *reason)
 {
     if (!IsRunning() || clients.find(client) == clients.end()) {
         return false;
     }
 
-    networkInterface->CloseConnection(client, 0, "Server Removed Client", true);
+    if (!reason) {
+        reason = "Server Removed Client";
+    }
+
+    networkInterface->CloseConnection(client, 0, reason, true);
     clients.erase(client);
     return true;
 }
@@ -253,25 +257,48 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
             return;
         }
 
+        // Using the provided listen socket information, we can determine
+        // which server listener to call from the global server registry
+        ServerListener *listener{ server->listener };
+
         switch (info->m_info.m_eState) {
+
+        // Handle connecting clients
+        case k_ESteamNetworkingConnectionState_Connecting:
+        {
+            const char *rejectReason{ nullptr };
+
+            // The user will handle accepting connections in the listener
+            if (listener) {
+                listener->OnConnectionRequest(*info, rejectReason);
+            }
+
+            // Client connection was rejected
+            if (server->clients.find(info->m_hConn) == server->clients.end()) {
+                if (!rejectReason) {
+                    rejectReason = "Server Rejected Connection";
+                }
+                server->networkInterface->CloseConnection(info->m_hConn, 0, rejectReason, false);
+            }
+
+            break;
+        }
 
         // Handle disconnecting clients
         case k_ESteamNetworkingConnectionState_ClosedByPeer:
         case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
+        {
             server->networkInterface->CloseConnection(info->m_hConn, 0, nullptr, false);
             server->clients.erase(info->m_hConn);
+            if (listener) {
+                listener->OnDisconnect(*info);
+            }
             break;
+        }
 
         // Silences -Wswitch
         default:
             break;
-        }
-
-        // Using the provided listen socket information, we can determine
-        // which server listener to call from the global server registry
-        ServerListener *listener{ server->listener };
-        if (listener) {
-            listener->OnConnectionStatusChanged(*info);
         }
     }
 }
