@@ -83,6 +83,9 @@ class Server
 
     /**
      * Polls for incoming messages and connection status changes.
+     *
+     * Throws `std::runtime_error` if there is an error when receiving incoming
+     * messages from poll group.
      */
     void Update();
 
