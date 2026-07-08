@@ -67,7 +67,7 @@ class Server
     void Start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions);
 
     /**
-     * Closes the server socket and poll group.
+     * Closes the server socket and poll group; clears all clients.
      *
      * When closing the socket, the server is also removed from the global
      * server registry for callbacks.
