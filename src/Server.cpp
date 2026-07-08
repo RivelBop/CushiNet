@@ -59,8 +59,19 @@ void Server::Start(const SteamNetworkingIPAddr &localAddress, const SteamNetwork
         return;
     }
 
+    // Expand options to include the callbacks
+    numOptions = (numOptions < 0) ? 0 : numOptions;
+    if (numOptions > 0 && !options) {
+        throw std::invalid_argument("Options array cannot be null if numOptions > 0.");
+    }
+    SteamNetworkingConfigValue_t *expandedOptions{ new SteamNetworkingConfigValue_t[numOptions + 1] };
+    std::copy(options, options + numOptions, expandedOptions);
+    expandedOptions[numOptions] = {};
+    expandedOptions[numOptions].SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)ConnectionStatusChangedCallback);
+
     // Create server socket
-    socket = networkInterface->CreateListenSocketIP(localAddress, numOptions, options);
+    socket = networkInterface->CreateListenSocketIP(localAddress, numOptions + 1, expandedOptions);
+    delete[] expandedOptions;
     if (socket == k_HSteamListenSocket_Invalid) {
         throw std::runtime_error("Unable to create server socket.");
     }
@@ -213,6 +224,11 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
     auto iterator{ globalServerRegistry.find(info->m_info.m_hListenSocket) };
     if (iterator != globalServerRegistry.end()) {
         Server *server{ iterator->second };
+
+        // Ensure the server is running
+        if (!server || !server->IsRunning()) {
+            return;
+        }
 
         // Keep track of all connected clients;
         // Useful when sending messages to all clients

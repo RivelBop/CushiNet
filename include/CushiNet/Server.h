@@ -56,6 +56,9 @@ class Server
      * For further network configuration, provide an option array `options`
      * (can be `nullptr`) and the number of options `numOptions` (can be `0`).
      *
+     * WARNING: Do not alter the `k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged`
+     * configuration; this is automatically set to the appropriate callback function for you.
+     *
      * Throws `std::runtime_error` if unable to create socket or poll group.
      */
     void Start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions);
@@ -137,17 +140,6 @@ class Server
      */
     bool IsRunning() const;
 
-    /**
-     * Used to alert servers of connection status changes.
-     *
-     * This should NEVER be called directly, this is useful when implementing
-     * custom server configurations; the user MUST utilize the built-in
-     * callback system by calling:
-     *
-     * `SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)connectionStatusChangedCallback)`.
-     */
-    static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info);
-
   private:
     ISteamNetworkingSockets *networkInterface{ nullptr };
     HSteamListenSocket socket{ k_HSteamListenSocket_Invalid };
@@ -156,6 +148,16 @@ class Server
     std::unordered_set<HSteamNetConnection> clients;
 
     static std::unordered_map<HSteamListenSocket, Server *> globalServerRegistry;
+
+    /**
+     * Used to alert servers of connection status changes.
+     *
+     * This should NEVER be called directly, this is used for
+     * handling the callback system via configuration:
+     *
+     * `SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)connectionStatusChangedCallback)`.
+     */
+    static void ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *info);
 };
 
 } // namespace CushiNet
