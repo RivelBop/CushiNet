@@ -61,6 +61,7 @@ class Server
      * WARNING: Do not alter the `k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged`
      * configuration; this is automatically set to the appropriate callback function for you.
      *
+     * Throws `std::invalid_argument` if `options` is `nullptr` but `numOptions` > `0`.
      * Throws `std::runtime_error` if unable to create socket or poll group.
      */
     void Start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions);
