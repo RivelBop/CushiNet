@@ -82,12 +82,17 @@ class Server
     void SetListener(ServerListener *listener);
 
     /**
-     * Polls for incoming messages and connection status changes.
+     * Polls for incoming messages and retrieves connection status changes.
+     *
+     * Disable `runCallbacks` if you have multiple servers or a client
+     * and server running at the same time, opting to call the global
+     * `RunCallbacks()` from `ISteamNetworkingSockets` to run all
+     * callbacks from one location at once.
      *
      * Throws `std::runtime_error` if there is an error when receiving incoming
      * messages from poll group.
      */
-    void Update();
+    void Update(bool runCallbacks = true);
 
     /**
      * Accepts a client's connection; this should be called in the callback

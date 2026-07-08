@@ -117,7 +117,7 @@ void Server::SetListener(ServerListener *listener)
     this->listener = listener;
 }
 
-void Server::Update()
+void Server::Update(bool runCallbacks)
 {
     // Make sure the server is running
     if (!IsRunning()) {
@@ -125,14 +125,17 @@ void Server::Update()
     }
 
     // Receive incoming messages
-    ISteamNetworkingMessage *incomingMsg{ nullptr };
-    int numMsgs{ networkInterface->ReceiveMessagesOnPollGroup(pollGroup, &incomingMsg, 1) };
-    while (numMsgs == 1 && incomingMsg) {
-        if (listener) {
-            listener->OnMessageReceived(*incomingMsg);
+    constexpr int maxMsgs{ 16 };
+    ISteamNetworkingMessage *incomingMsgs[maxMsgs];
+    int numMsgs{ networkInterface->ReceiveMessagesOnPollGroup(pollGroup, incomingMsgs, maxMsgs) };
+    while (numMsgs > 0) {
+        for (int i{ 0 }; i < numMsgs; i++) {
+            if (listener) {
+                listener->OnMessageReceived(*incomingMsgs[i]);
+            }
+            incomingMsgs[i]->Release();
         }
-        incomingMsg->Release();
-        numMsgs = networkInterface->ReceiveMessagesOnPollGroup(pollGroup, &incomingMsg, 1);
+        numMsgs = networkInterface->ReceiveMessagesOnPollGroup(pollGroup, incomingMsgs, maxMsgs);
     }
 
     // Critical Error: Unable to receive incoming messages
@@ -142,7 +145,9 @@ void Server::Update()
     }
 
     // Receive connection state changes
-    networkInterface->RunCallbacks();
+    if (runCallbacks) {
+        networkInterface->RunCallbacks();
+    }
 }
 
 EResult Server::AcceptClient(HSteamNetConnection client)
