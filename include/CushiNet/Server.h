@@ -22,6 +22,9 @@ class ServerListener
      * You can choose to accept this connection via `AcceptClient(client)` or simply ignore it
      * and provide an optional `rejectReason` explaining why the request was rejected.
      *
+     * You do not need to provide a `rejectReason` if `AcceptClient(client)` fails as it will
+     * automatically provide a reason for you and close the connection request.
+     *
      * This is the ideal place to deny connections if a server is already full and where you
      * should handle what happens when a client successfully connects after `AcceptClient(client)`
      * returns `k_EResultOK`.
