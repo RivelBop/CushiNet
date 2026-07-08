@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <vector>
 
 #include <CushiNet/Server.h>
 
@@ -64,14 +65,13 @@ void Server::Start(const SteamNetworkingIPAddr &localAddress, const SteamNetwork
     if (numOptions > 0 && !options) {
         throw std::invalid_argument("Options array cannot be null if numOptions > 0.");
     }
-    SteamNetworkingConfigValue_t *expandedOptions{ new SteamNetworkingConfigValue_t[numOptions + 1] };
-    std::copy(options, options + numOptions, expandedOptions);
-    expandedOptions[numOptions] = {};
-    expandedOptions[numOptions].SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)ConnectionStatusChangedCallback);
+    std::vector<SteamNetworkingConfigValue_t> expandedOptions(options, options + numOptions);
+    SteamNetworkingConfigValue_t callbackOpt;
+    callbackOpt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void *)ConnectionStatusChangedCallback);
+    expandedOptions.push_back(callbackOpt);
 
     // Create server socket
-    socket = networkInterface->CreateListenSocketIP(localAddress, numOptions + 1, expandedOptions);
-    delete[] expandedOptions;
+    socket = networkInterface->CreateListenSocketIP(localAddress, expandedOptions.size(), expandedOptions.data());
     if (socket == k_HSteamListenSocket_Invalid) {
         throw std::runtime_error("Unable to create server socket.");
     }
