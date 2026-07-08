@@ -28,6 +28,8 @@ class Server
      *
      * The recommended default `networkInterface` implementation is provided by Valve via
      * `SteamNetworkingSockets()`.
+     *
+     * Throws `std::invalid_argument` if `networkInterface` is a `nullptr`.
      */
     Server(ServerListener *listener = nullptr, ISteamNetworkingSockets *networkInterface = SteamNetworkingSockets());
 
