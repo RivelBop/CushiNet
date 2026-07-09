@@ -8,8 +8,6 @@
 namespace CushiNet
 {
 
-class Server;
-
 class ServerListener
 {
   public:
