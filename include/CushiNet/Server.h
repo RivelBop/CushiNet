@@ -147,7 +147,7 @@ class Server
      * - `k_EResultDuplicateRequest`: Client is already in the server.
      * - `k_EResultFail`: Unable to add connection to the poll group.
      */
-    EResult AcceptClient(HSteamNetConnection client);
+    [[nodiscard]] EResult AcceptClient(HSteamNetConnection client);
 
     /**
      * Closes a client's connection, kicking them out.
@@ -203,12 +203,12 @@ class Server
     /**
      * Returns all connected clients.
      */
-    const std::unordered_set<HSteamNetConnection> &GetClients() const;
+    [[nodiscard]] const std::unordered_set<HSteamNetConnection> &GetClients() const;
 
     /**
      * Returns `true` if a server socket and poll group have been created.
      */
-    bool IsRunning() const;
+    [[nodiscard]] bool IsRunning() const;
 
   private:
     ISteamNetworkingSockets *networkInterface{ nullptr };
