@@ -161,8 +161,7 @@ void Client::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
         case k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
         {
             globalClientRegistry.erase(client->connection);
-
-            client->networkInterface->CloseConnection(client->connection, 0, "Client Disconnected", false);
+            client->networkInterface->CloseConnection(client->connection, 0, nullptr, false);
             client->connection = k_HSteamNetConnection_Invalid;
 
             if (listener) {
