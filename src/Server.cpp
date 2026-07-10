@@ -21,10 +21,8 @@ Server::~Server()
 
 void Server::Start(uint16 port)
 {
-    // Prevent starting the same server again
-    if (IsRunning()) {
-        return;
-    }
+    // Close the server if it was running
+    Stop();
 
     // Set cleared IP with port
     SteamNetworkingIPAddr serverLocalAddr;
@@ -55,10 +53,8 @@ void Server::Start(uint16 port)
 
 void Server::Start(const SteamNetworkingIPAddr &localAddress, const SteamNetworkingConfigValue_t *options, int numOptions)
 {
-    // Prevent starting the same server again
-    if (IsRunning()) {
-        return;
-    }
+    // Close the server if it was running
+    Stop();
 
     // Expand options to include the callbacks
     numOptions = (numOptions < 0) ? 0 : numOptions;

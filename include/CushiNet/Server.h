@@ -77,7 +77,8 @@ class Server
 
     /**
      * Creates a server socket that listens for clients to connect and a poll group
-     * to handle messages from all connections.
+     * to handle messages from all connections. If the server was already running,
+     * it will be stopped and your requested socket will be created.
      *
      * Requires a `port` to host on, the `localAddress` is cleared, and a connection
      * status changed callback is configured for this server.
@@ -88,7 +89,8 @@ class Server
 
     /**
      * Creates a server socket that listens for clients to connect and a poll group
-     * to handle messages from all connections.
+     * to handle messages from all connections. If the server was already running,
+     * it will be stopped and your requested socket will be created.
      *
      * Requires IPv4, IPv6, and port specifications provided via `localAddress`.
      *
