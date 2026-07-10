@@ -6,6 +6,8 @@
 namespace CushiNet
 {
 
+std::unordered_map<HSteamNetConnection, Client *> Client::globalClientRegistry;
+
 Client::Client(ClientListener *listener, ISteamNetworkingSockets *networkInterface)
     : listener(listener), networkInterface(networkInterface)
 {
