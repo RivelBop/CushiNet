@@ -45,16 +45,26 @@ class Client
 {
   public:
     /**
-     * Create a client with the provided `ClientListener` and `ISteamNetworkingSockets` implementation.
+     * Create a client by providing an optional `ClientListener`.
      *
      * The `listener` is a `nullptr` by default but setting one is highly recommended.
      *
-     * The recommended default `networkInterface` implementation is provided by Valve via
+     * The `networkInterface` implementation is provided by Valve via
      * `SteamNetworkingSockets()`.
+     *
+     * Throws `std::runtime_error` if unable to initialize GameNetworkingSockets.
+     */
+    Client(ClientListener *listener = nullptr);
+
+    /**
+     * Create a client with the provided `ISteamNetworkingSockets` implementation and
+     * an optional `ClientListener`.
+     *
+     * The `listener` is a `nullptr` by default but setting one is highly recommended.
      *
      * Throws `std::invalid_argument` if `networkInterface` is a `nullptr`.
      */
-    Client(ClientListener *listener = nullptr, ISteamNetworkingSockets *networkInterface = SteamNetworkingSockets());
+    Client(ISteamNetworkingSockets *networkInterface, ClientListener *listener = nullptr);
 
     /**
      * Disconnects the client from the server by calling `Leave()`.

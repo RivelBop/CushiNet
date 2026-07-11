@@ -2,14 +2,28 @@
 #include <vector>
 
 #include <CushiNet/Client.h>
+#include <steam/steamnetworkingsockets.h>
 
 namespace CushiNet
 {
 
 std::unordered_map<HSteamNetConnection, Client *> Client::globalClientRegistry;
 
-Client::Client(ClientListener *listener, ISteamNetworkingSockets *networkInterface)
-    : listener(listener), networkInterface(networkInterface)
+Client::Client(ClientListener *listener)
+    : listener(listener)
+{
+    networkInterface = SteamNetworkingSockets();
+    if (!networkInterface) {
+        SteamNetworkingErrMsg errMsg;
+        if (!GameNetworkingSockets_Init(nullptr, errMsg)) {
+            throw std::runtime_error(errMsg);
+        }
+        networkInterface = SteamNetworkingSockets();
+    }
+}
+
+Client::Client(ISteamNetworkingSockets *networkInterface, ClientListener *listener)
+    : networkInterface(networkInterface), listener(listener)
 {
     if (!networkInterface) {
         throw std::invalid_argument("Network interface cannot be null.");
