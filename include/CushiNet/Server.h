@@ -59,16 +59,26 @@ class Server
 {
   public:
     /**
-     * Create a server with the provided `ServerListener` and `ISteamNetworkingSockets` implementation.
+     * Create a server by providing an optional `ServerListener`.
      *
      * The `listener` is a `nullptr` by default but setting one is highly recommended.
      *
-     * The recommended default `networkInterface` implementation is provided by Valve via
+     * The `networkInterface` implementation is provided by Valve via
      * `SteamNetworkingSockets()`.
+     *
+     * Throws `std::runtime_error` if unable to initialize GameNetworkingSockets.
+     */
+    Server(ServerListener *listener = nullptr);
+
+    /**
+     * Create a server with the provided `ISteamNetworkingSockets` implementation and
+     * an optional `ServerListener`.
+     *
+     * The `listener` is a `nullptr` by default but setting one is highly recommended.
      *
      * Throws `std::invalid_argument` if `networkInterface` is a `nullptr`.
      */
-    Server(ServerListener *listener = nullptr, ISteamNetworkingSockets *networkInterface = SteamNetworkingSockets());
+    Server(ISteamNetworkingSockets *networkInterface, ServerListener *listener = nullptr);
 
     /**
      * Stops the server.
