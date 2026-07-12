@@ -35,6 +35,13 @@ Client::~Client()
     Leave();
 }
 
+void Client::JoinLocalHost(uint16 port)
+{
+    SteamNetworkingIPAddr serverAddress;
+    serverAddress.SetIPv6LocalHost(port);
+    Join(serverAddress);
+}
+
 void Client::Join(const SteamNetworkingIPAddr &serverAddress)
 {
     // If already in server, leave it

@@ -74,6 +74,16 @@ class Client
     ~Client();
 
     /**
+     * Creates a connection to a server by calling `SetIPv6LocalHost()`
+     * with the provided port (defaults to `21106`) on the `serverAddress`
+     * and passing it into the Client's
+     * `Join(const SteamNetworkingIPAddr &serverAddress)`.
+     *
+     * Throws `std::runtime_error` if unable to connect to server.
+     */
+    void JoinLocalHost(uint16 port = 21106);
+
+    /**
      * Creates a connection to a server using the provided IPv4, IPv6,
      * and port specifications in `serverAddress`. If this client is
      * already in a server, this will leave that server and attempt to
