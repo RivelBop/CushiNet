@@ -107,7 +107,7 @@ void Client::Update(bool runCallbacks)
     while (numMsgs > 0) {
         for (int i{ 0 }; i < numMsgs; i++) {
             if (listener) {
-                listener->OnMessageReceived(*incomingMsgs[i]);
+                listener->OnMessageReceived(*this, *incomingMsgs[i]);
             }
             incomingMsgs[i]->Release();
         }
@@ -167,7 +167,7 @@ void Client::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
         case k_ESteamNetworkingConnectionState_Connected:
         {
             if (listener) {
-                listener->OnConnect(*info);
+                listener->OnConnect(*client, *info);
             }
             break;
         }
@@ -181,7 +181,7 @@ void Client::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
             client->connection = k_HSteamNetConnection_Invalid;
 
             if (listener) {
-                listener->OnDisconnect(*info);
+                listener->OnDisconnect(*client, *info);
             }
             break;
         }

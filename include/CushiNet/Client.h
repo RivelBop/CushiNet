@@ -7,6 +7,8 @@
 namespace CushiNet
 {
 
+class Client;
+
 class ClientListener
 {
   public:
@@ -16,7 +18,7 @@ class ClientListener
      * Called when the client's connection is accepted by the server, aka when
      * `info.m_info.m_eState` is `k_ESteamNetworkingConnectionState_Connected`.
      */
-    virtual void OnConnect(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
+    virtual void OnConnect(Client &client, const SteamNetConnectionStatusChangedCallback_t &info) = 0;
 
     /**
      * Called when a message is received from the server.
@@ -24,7 +26,7 @@ class ClientListener
      * You should read the message and possibly send something back via
      * `SendMessage(data, dataSize, networkProtocol)`.
      */
-    virtual void OnMessageReceived(const ISteamNetworkingMessage &msg) = 0;
+    virtual void OnMessageReceived(Client &client, const ISteamNetworkingMessage &msg) = 0;
 
     /**
      * Called when the client disconnects from the server, aka when
@@ -38,7 +40,7 @@ class ClientListener
      * server via `Leave()`. In this case, you should handle the disconnect
      * logic right after instead of waiting for `RunCallbacks()`.
      */
-    virtual void OnDisconnect(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
+    virtual void OnDisconnect(Client &client, const SteamNetConnectionStatusChangedCallback_t &info) = 0;
 };
 
 class Client
