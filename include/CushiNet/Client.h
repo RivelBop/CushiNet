@@ -126,7 +126,7 @@ class Client
     void SetListener(ClientListener *listener);
 
     /**
-     * Polls for incoming messages and retrieves connection status changes.
+     * Retrieves connection status changes and polls for incoming messages.
      *
      * Disable `runCallbacks` if you have a client and server running at the
      * same time, opting to call the global `RunCallbacks()` from

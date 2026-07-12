@@ -131,6 +131,11 @@ void Server::SetListener(ServerListener *listener)
 
 void Server::Update(bool runCallbacks)
 {
+    // Receive connection state changes
+    if (runCallbacks) {
+        networkInterface->RunCallbacks();
+    }
+
     // Make sure the server is running
     if (!IsRunning()) {
         return;
@@ -154,11 +159,6 @@ void Server::Update(bool runCallbacks)
     if (numMsgs < 0) {
         Stop();
         throw std::runtime_error("Unable to receive messages on server poll group. Stopping server.");
-    }
-
-    // Receive connection state changes
-    if (runCallbacks) {
-        networkInterface->RunCallbacks();
     }
 }
 

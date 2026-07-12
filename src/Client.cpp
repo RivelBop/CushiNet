@@ -102,6 +102,11 @@ void Client::SetListener(ClientListener *listener)
 
 void Client::Update(bool runCallbacks)
 {
+    // Receive connection state changes
+    if (runCallbacks) {
+        networkInterface->RunCallbacks();
+    }
+
     // Ensure client is connected to a server
     if (!IsConnected()) {
         return;
@@ -125,11 +130,6 @@ void Client::Update(bool runCallbacks)
     if (numMsgs < 0) {
         Leave();
         throw std::runtime_error("Unable to receive messages from server. Disconnecting from server.");
-    }
-
-    // Receive connection state changes
-    if (runCallbacks) {
-        networkInterface->RunCallbacks();
     }
 }
 
