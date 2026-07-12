@@ -143,7 +143,7 @@ void Server::Update(bool runCallbacks)
     while (numMsgs > 0) {
         for (int i{ 0 }; i < numMsgs; i++) {
             if (listener) {
-                listener->OnMessageReceived(*incomingMsgs[i]);
+                listener->OnMessageReceived(*this, *incomingMsgs[i]);
             }
             incomingMsgs[i]->Release();
         }
@@ -282,7 +282,7 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
 
             // The user will handle accepting connections in the listener
             if (listener) {
-                listener->OnConnectionRequest(*info, rejectReason);
+                listener->OnConnectionRequest(*server, *info, rejectReason);
             }
 
             // Client connection was rejected
@@ -303,7 +303,7 @@ void Server::ConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCall
             server->networkInterface->CloseConnection(info->m_hConn, 0, nullptr, false);
             server->clients.erase(info->m_hConn);
             if (listener) {
-                listener->OnDisconnect(*info);
+                listener->OnDisconnect(*server, *info);
             }
             break;
         }

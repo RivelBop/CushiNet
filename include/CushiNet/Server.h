@@ -8,6 +8,8 @@
 namespace CushiNet
 {
 
+class Server;
+
 class ServerListener
 {
   public:
@@ -27,7 +29,7 @@ class ServerListener
      * should handle what happens when a client successfully connects after `AcceptClient(client)`
      * returns `k_EResultOK`.
      */
-    virtual void OnConnectionRequest(const SteamNetConnectionStatusChangedCallback_t &info, const char *&rejectReason) = 0;
+    virtual void OnConnectionRequest(Server &server, const SteamNetConnectionStatusChangedCallback_t &info, const char *&rejectReason) = 0;
 
     /**
      * Called when a message is received from a client connection via the poll group.
@@ -36,7 +38,7 @@ class ServerListener
      * `SendMessageToClient(client, data, dataSize, networkProtocol)` or
      * `SendMessageToAllClients(data, dataSize, networkProtocol, except)`.
      */
-    virtual void OnMessageReceived(const ISteamNetworkingMessage &msg) = 0;
+    virtual void OnMessageReceived(Server &server, const ISteamNetworkingMessage &msg) = 0;
 
     /**
      * Called when a client disconnects from the server, aka when `info.m_info.m_eState`
@@ -52,7 +54,7 @@ class ServerListener
      * via `RemoveClient(client)`. In this case, you should handle the disconnect
      * logic right after instead of waiting for `RunCallbacks()`.
      */
-    virtual void OnDisconnect(const SteamNetConnectionStatusChangedCallback_t &info) = 0;
+    virtual void OnDisconnect(Server &server, const SteamNetConnectionStatusChangedCallback_t &info) = 0;
 };
 
 class Server
