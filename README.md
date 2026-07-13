@@ -201,7 +201,7 @@ client.Leave();
 When you are done using networking completely or are shutting down your application, make sure to call:
 
 ```cpp
-CushiNet::Dispose();
+Dispose(); // CushiNet::Dispose();
 ```
 
 to close all sockets and connections, and free resources.
@@ -212,7 +212,7 @@ If you find the `RunCallbacks()` explanation above insufficient and/or confusing
 thing you can do instead is to pass `false` into all `Update()` calls and run:
 
 ```cpp
-CushiNet::RunCallbacks();
+RunCallbacks(); // CushiNet::RunCallbacks();
 ```
 
 **BEFORE CALLING EACH `Update(false)`!** <br>
