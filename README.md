@@ -96,7 +96,7 @@ SListener sListener;
 Pass the server listener instance above into a server instance:
 
 ```cpp
-static Server server(sListener);
+static Server server(&sListener);
 ```
 
 Call this once to start the server:
@@ -165,7 +165,7 @@ CListener cListener;
 Pass the client listener instance above into a client instance:
 
 ```cpp
-static Client client(cListener);
+static Client client(&cListener);
 ```
 
 Call this once to join a **local** server:
