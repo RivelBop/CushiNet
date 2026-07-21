@@ -13,6 +13,14 @@ endif()
 set(GAME_NETWORKING_SOCKETS_VERSION 1.6.0)
 find_package(GameNetworkingSockets ${GAME_NETWORKING_SOCKETS_VERSION} QUIET)
 if (NOT GameNetworkingSockets_FOUND)
+  # Prevent GNS from compiling tests and examples during FetchContent
+  if (NOT DEFINED BUILD_EXAMPLES)
+    set(BUILD_EXAMPLES OFF CACHE BOOL "Disable GameNetworkingSockets examples")
+  endif()
+  if (NOT DEFINED BUILD_TESTS)
+    set(BUILD_TESTS OFF CACHE BOOL "Disable GameNetworkingSockets tests")
+  endif()
+
   include(FetchContent)
   FetchContent_Declare(
       GameNetworkingSockets
@@ -48,7 +56,20 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Link GameNetworkingSockets to CushiNet
-target_link_libraries(${PROJECT_NAME} PUBLIC GameNetworkingSockets)
+
+# Check if CushiNet is being built as a Shared or Static library
+get_target_property(CUSHINET_LIB_TYPE ${PROJECT_NAME} TYPE)
+
+if(CUSHINET_LIB_TYPE STREQUAL "SHARED_LIBRARY")
+  # Link the shared version of GameNetworkingSockets
+  target_link_libraries(${PROJECT_NAME} PUBLIC GameNetworkingSockets)
+else()
+  # Link the static version of GameNetworkingSockets
+  target_link_libraries(${PROJECT_NAME} PUBLIC GameNetworkingSockets_s)
+
+  # Required macro for static headers
+  target_compile_definitions(${PROJECT_NAME} PUBLIC STEAMNETWORKINGSOCKETS_STATIC_LINK)
+endif()
 
 # ================================================== #
 # Allow users to run `make install` and use `find_package(CushiNet)`
