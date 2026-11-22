@@ -220,3 +220,15 @@ RunCallbacks(); // CushiNet::RunCallbacks();
 For additional help and details, be sure to read all the carefully written comments above each function.
 You can also have a look at Valve's [example_chat.cpp](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/examples/example_chat.cpp)
 and their official [documentation](https://partner.steamgames.com/doc/api/ISteamNetworkingSockets).
+
+## Development
+
+To build CushiNet, install the following packages (change package manager depending on your platform):
+
+```bash
+# OpenSSL
+sudo apt install libssl-dev
+
+# Protobuf
+sudo apt install libprotobuf-dev protobuf-compiler
+```
