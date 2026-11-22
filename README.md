@@ -1,9 +1,8 @@
 # CushiNet
 
-An easy-to-use C++ networking library for game development (or anything network-related).
+An easy-to-use C++ networking library for game development.
 
-Built with [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) and inspired by
-[KryoNet](https://github.com/EsotericSoftware/kryonet).
+Built with [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) and inspired by [KryoNet](https://github.com/EsotericSoftware/kryonet).
 
 ## Features
 
@@ -14,13 +13,9 @@ The integral parts of the library are:
 
 ## Why Shouldn't I Just Use GNS Directly?
 
-CushiNet serves as a layer of abstraction over Valve's [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) --
-simplifying the typical [client-server](https://en.wikipedia.org/wiki/Client%E2%80%93server_model) workflow.
+CushiNet serves as a layer of abstraction over Valve's [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) -- simplifying the typical [client-server](https://en.wikipedia.org/wiki/Client%E2%80%93server_model) workflow.
 
-This library references the [example_chat.cpp](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/examples/example_chat.cpp)
-that Valve provides. When compared to this example, using CushiNet for servers
-and clients results in SUBSTANTIALLY less code and complexity. For reference,
-check out the example below.
+This library references the [example_chat.cpp](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/examples/example_chat.cpp) that Valve provides. When compared to this example, using CushiNet for servers and clients results in SUBSTANTIALLY less code and complexity. For reference, check out the example below.
 
 ## Example / Documentation
 
@@ -105,8 +100,7 @@ Call this once to start the server:
 server.Start();
 ```
 
-**NOTE: The line above hosts with a cleared IP address on port 21106. If you want to host on another port, pass it as a
-parameter; if on a specific IP address, use the designated `server.Start(localAddress, options, numOptions)` method.**
+**NOTE: The line above hosts with a cleared IP address on port 21106. If you want to host on another port, pass it as a parameter; if on a specific IP address, use the designated `server.Start(localAddress, options, numOptions)` method.**
 
 Call this in your game loop to update the server:
 
@@ -114,10 +108,7 @@ Call this in your game loop to update the server:
 server.Update();
 ```
 
-**NOTE: Typically you want either your server or client to `RunCallbacks()`, so you should
-call `Update()` as it is shown above if the server is the first network-related instance
-that calls `Update()` since `RunCallbacks()` will be called globally for all `Update()`
-calls that follow. See the Extras section below for more details.**
+**NOTE: Typically you want either your server or client to `RunCallbacks()`, so you should call `Update()` as it is shown above if the server is the first network-related instance that calls `Update()` since `RunCallbacks()` will be called globally for all `Update()` calls that follow. See the Extras section below for more details.**
 
 Call this to close your server:
 
@@ -174,8 +165,7 @@ Call this once to join a **local** server:
 client.JoinLocalHost();
 ```
 
-**NOTE: The line above joins a locally hosted server on port 21106. If you want to join locally on another port, pass
-it as a parameter; if on a specific local or remote IP address, use the two designated `client.Join()` methods.**
+**NOTE: The line above joins a locally hosted server on port 21106. If you want to join locally on another port, pass it as a parameter; if on a specific local or remote IP address, use the two designated `client.Join()` methods.**
 
 Call this in your game loop to update the client:
 
@@ -183,10 +173,7 @@ Call this in your game loop to update the client:
 client.Update(false);
 ```
 
-**NOTE: Typically you want either your server or client to `RunCallbacks()`, so you should
-call `Update(false)` as it is shown above if the server was the first network-related instance
-that called `Update()` since it will call `RunCallbacks()` globally. See the Extras section below
-for more details.**
+**NOTE: Typically you want either your server or client to `RunCallbacks()`, so you should call `Update(false)` as it is shown above if the server was the first network-related instance that called `Update()` since it will call `RunCallbacks()` globally. See the Extras section below for more details.**
 
 Call this to close your client:
 
@@ -208,8 +195,7 @@ to close all sockets and connections, and free resources.
 
 ### Extras
 
-If you find the `RunCallbacks()` explanation above insufficient and/or confusing, the simplest
-thing you can do instead is to pass `false` into all `Update()` calls and run:
+If you find the `RunCallbacks()` explanation above insufficient and/or confusing, the simplest thing you can do instead is to pass `false` into all `Update()` calls and run:
 
 ```cpp
 RunCallbacks(); // CushiNet::RunCallbacks();
@@ -217,9 +203,7 @@ RunCallbacks(); // CushiNet::RunCallbacks();
 
 **BEFORE CALLING EACH `Update(false)`!** <br>
 
-For additional help and details, be sure to read all the carefully written comments above each function.
-You can also have a look at Valve's [example_chat.cpp](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/examples/example_chat.cpp)
-and their official [documentation](https://partner.steamgames.com/doc/api/ISteamNetworkingSockets).
+For additional help and details, be sure to read all the carefully written comments above each function. You can also have a look at Valve's [example_chat.cpp](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/examples/example_chat.cpp) and their official [documentation](https://partner.steamgames.com/doc/api/ISteamNetworkingSockets).
 
 ## Development
 
