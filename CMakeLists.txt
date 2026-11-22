@@ -10,7 +10,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 # GameNetworkingSockets Dependencies
-set(GAME_NETWORKING_SOCKETS_VERSION 1.6.0)
+set(GAME_NETWORKING_SOCKETS_VERSION 1.6.1)
 find_package(GameNetworkingSockets ${GAME_NETWORKING_SOCKETS_VERSION} QUIET)
 if (NOT GameNetworkingSockets_FOUND)
   # Prevent GNS from compiling tests and examples during FetchContent
